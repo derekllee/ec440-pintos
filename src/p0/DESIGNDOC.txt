@@ -1,0 +1,102 @@
+			+-------------------------+
+			|        EC 440           |
+			| PROJECT 0: Getting Real |
+			|     DESIGN DOCUMENT     |
+			+-------------------------+
+				   
+---- AUTHOR ----
+
+>> Fill in your name and email address.
+
+Derek Lee derekl07@bu.edu
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+			     Booting Pintos
+			     ==============
+
+---- QUESTIONS ---- 
+>> Put the screenshots of Pintos running in src/p0.
+>> A1: Is there any particular issue that you would like us to know?
+None
+			     Debugging
+			     =========
+
+---- QUESTIONS: BIOS ---- 
+>> B1: What is the first instruction that gets executed?
+limp $0x3680, $0xf000e05b
+>> B2: At which physical address is this instruction located?
+0xFFFF0
+>> B3: Can you guess why the first instruction is like this?
+Far jump to the the full BIOS and set the new segment
+>> B4: What are the next three instructions?
+cmpw   $0xffc8,%cs:(%esi)
+jne    0xd241d416
+xor    %edx,%edx
+---- QUESTIONS: BOOTLOADER ---- 
+>> B5: How does the bootloader read disk sectors? In particular, what BIOS interrupt
+is used?
+The boot loader uses the BIOS extended read interrupt at int $0x13 and creates a disk address packet to call the interrupt.
+>> B6: How does the bootloader decides whether it successfully finds the Pintos kernel?
+It scans the hard disks and looks for the Pintos kernel signature using the cmpb to check if it is a Pintos kernel and if it is bootable, then it will jump out of the loop.
+>> B7: What happens when the bootloader could not find the Pintos kernel?
+If it doesn't find the Pintos kernel partition anywhere, it will give up and notify BIOS that the boot failed.
+>> B8: At what point and how exactly does the bootloader transfer control to the Pintos kernel?
+The boot loader transfers control to Pintos after reading an ELF header and creates the pointer to the starting memory address.
+---- QUESTIONS: KERNEL ---- 
+>> B9: At the entry of pintos_init(), what is the value of expression 
+init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+0x00102027
+>> B10: When palloc_get_page() is called for the first time,
+
+>> B10.1 what does the call stack look like?
+#0  palloc_get_page (flags=PAL_ZERO) at ../../threads/palloc.c:113
+#1  0xc0020a81 in thread_create (name=0xc002e895 "idle", priority=0, function=0xc0
+020eb0 <idle>, aux=0xc000efbc) at ../../threads/thread.c:178
+#2  0xc0020976 in thread_start () at ../../threads/thread.c:111
+#3  0xc0020334 in pintos_init () at ../../threads/init.c:119
+#4  0xc002013d in start () at ../../threads/start.S:180
+>> B10.2 what is the return value in hexadecimal format?
+0xc0103000
+>> B10.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+0x102027
+>> B11: When palloc_get_page() is called for the third time,
+
+>> B11.1 what does the call stack look like?
+#0  palloc_get_page (flags=(unknown: 0)) at ../../threads/palloc.c:113
+#1  0xc002354b in malloc (size=80) at ../../threads/malloc.c:130
+#2  0xc002ba42 in test_sleep (thread_cnt=5, iterations=7) at ../../tests/thread
+s/alarm-wait.c:69
+#3  0xc002b9a7 in test_alarm_multiple () at ../../tests/threads/alarm-wait.c:24
+#4  0xc002b885 in run_test (name=0xc0007d45 "alarm-multiple") at ../../tests/th
+reads/tests.c:56
+#5  0xc0020786 in run_task (argv=0xc00370e4 <argv+4>) at ../../threads/init.c:2
+94
+#6  0xc0020864 in run_actions (argv=0xc00370e4 <argv+4>) at ../../threads/init.
+c:344
+#7  0xc0020362 in pintos_init () at ../../threads/init.c:134
+#8  0xc002013d in start () at ../../threads/start.S:180
+>> B11.2 what is the return value in hexadecimal format?
+0xc0104000
+>> B11.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+0x102027
+			     Kernel Monitor
+			     ==============
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+---- ALGORITHMS ----
+>> C2: Explain how you read and write to the console for the kernel monitor.
+
+>> C3: Any additional enhancement you implement?

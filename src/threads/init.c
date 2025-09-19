@@ -1,3 +1,49 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stddef.h>
+#include "devices/input.h"
+
+/* Minimal inline shell to avoid extra build wiring. */
+static void read_line_inline(char *buf, size_t n) {
+  size_t i = 0;
+  for (;;) {
+    int ch = input_getc();
+
+    if (ch == '\r' || ch == '\n') {
+      printf("\n");
+      buf[i] = '\0';
+      return;
+    }
+
+    // Only accept printable ASCII 0x20 (space) through 0x7E (~)
+    if (i + 1 < n && ch >= 32 && ch <= 126) {
+      buf[i++] = (char) ch;
+      putchar(ch);
+    }
+
+    // Optional backspace support (not required in spec)
+    else if ((ch == '\b' || ch == 127) && i > 0) {
+      i--;
+      printf("\b \b");
+    }
+  }
+}
+
+void kernel_monitor(void) {
+  char line[128];
+  for (;;) {
+    printf("BUOS> ");
+    memset(line, 0, sizeof line);
+    read_line_inline(line, sizeof line);
+    if (!strcmp(line, "whoami"))      printf("Derek Lee\n");   /* your name */
+    else if (!strcmp(line, "exit"))   return;
+    else if (line[0] != '\0')         printf("invalid command\n");
+  }
+}
+
+
+#include "threads/monitor.h"
 #include "threads/init.h"
 #include <console.h>
 #include <debug.h>
@@ -133,7 +179,8 @@ pintos_init (void)
     /* Run actions specified on kernel command line. */
     run_actions (argv);
   } else {
-    // TODO: no command line passed to kernel. Run interactively 
+    // TODO: no command line passed to kernel. Run interactively
+    kernel_monitor(); 
   }
 
   /* Finish up. */
